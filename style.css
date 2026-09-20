@@ -43,7 +43,8 @@ body {
   transition: background 0.4s ease, color 0.4s ease;
 }
 
-body::before {
+body::before,
+body::after {
   content: "";
   position: fixed;
   inset: 0;
@@ -55,7 +56,17 @@ body::before {
 
 body.weather-clear-day::before {
   opacity: 1;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0));
+}
+
+body.weather-clear-day::after {
+  opacity: 1;
+  inset: 10% auto auto 12%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(253, 224, 71, 0.95) 0%, rgba(251, 191, 36, 0.75) 45%, rgba(251, 191, 36, 0.1) 75%, transparent 100%);
+  box-shadow: 0 0 45px rgba(250, 204, 21, 0.75);
 }
 
 body.weather-clear-night::before {
@@ -66,16 +77,28 @@ body.weather-clear-night::before {
     radial-gradient(circle at 68% 26%, rgba(255, 255, 255, 0.4) 0 2px, transparent 3px),
     radial-gradient(circle at 80% 18%, rgba(255, 255, 255, 0.45) 0 2px, transparent 3px),
     radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.28) 0 2px, transparent 3px),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.1), rgba(15, 23, 42, 0));
+    linear-gradient(180deg, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0));
+}
+
+body.weather-clear-night::after {
+  opacity: 1;
+  inset: 12% auto auto 14%;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f8fafc 0%, #dbeafe 35%, #93c5fd 100%);
+  box-shadow: 0 0 35px rgba(147, 197, 253, 0.55);
 }
 
 body.weather-cloudy::before {
   opacity: 1;
   background:
     radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.9) 0 28%, transparent 29%),
-    radial-gradient(circle at 38% 30%, rgba(255, 255, 255, 0.75) 0 22%, transparent 23%),
-    radial-gradient(circle at 58% 30%, rgba(255, 255, 255, 0.72) 0 25%, transparent 26%),
+    radial-gradient(circle at 40% 26%, rgba(255, 255, 255, 0.75) 0 26%, transparent 27%),
+    radial-gradient(circle at 58% 28%, rgba(255, 255, 255, 0.9) 0 24%, transparent 25%),
+    radial-gradient(circle at 76% 24%, rgba(255, 255, 255, 0.72) 0 22%, transparent 23%),
     linear-gradient(180deg, rgba(148, 163, 184, 0.08), rgba(148, 163, 184, 0.02));
+  filter: blur(3px);
 }
 
 body.weather-fog::before {
@@ -83,20 +106,23 @@ body.weather-fog::before {
   background:
     radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.75), transparent 30%),
     radial-gradient(circle at 70% 45%, rgba(255, 255, 255, 0.68), transparent 32%),
-    linear-gradient(180deg, rgba(203, 213, 225, 0.28), rgba(148, 163, 184, 0.12));
+    radial-gradient(circle at 45% 70%, rgba(255, 255, 255, 0.45), transparent 38%),
+    linear-gradient(180deg, rgba(203, 213, 225, 0.38), rgba(148, 163, 184, 0.18));
   filter: blur(18px);
 }
 
 body.weather-rain::before {
   opacity: 1;
   background:
-    linear-gradient(180deg, rgba(14, 116, 144, 0.2), rgba(15, 23, 42, 0.28)),
+    linear-gradient(180deg, rgba(14, 116, 144, 0.25), rgba(15, 23, 42, 0.3)),
     repeating-linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.3) 0,
-      rgba(255, 255, 255, 0.3) 2px,
-      transparent 2px,
-      transparent 12px
+      120deg,
+      transparent 0,
+      transparent 18px,
+      rgba(191, 219, 254, 0.7) 18px,
+      rgba(191, 219, 254, 0.7) 22px,
+      transparent 22px,
+      transparent 42px
     );
   animation: rainShift 0.8s linear infinite;
 }
@@ -104,24 +130,35 @@ body.weather-rain::before {
 body.weather-snow::before {
   opacity: 1;
   background:
-    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.7) 0 1.5px, transparent 2px),
-    radial-gradient(circle at 42% 30%, rgba(255, 255, 255, 0.65) 0 2px, transparent 2.6px),
-    radial-gradient(circle at 62% 16%, rgba(255, 255, 255, 0.75) 0 1.8px, transparent 2.3px),
-    linear-gradient(180deg, rgba(191, 219, 254, 0.15), rgba(148, 163, 184, 0.05));
+    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.8) 0 1.7px, transparent 2.2px),
+    radial-gradient(circle at 42% 30%, rgba(255, 255, 255, 0.7) 0 2px, transparent 2.6px),
+    radial-gradient(circle at 62% 16%, rgba(255, 255, 255, 0.8) 0 1.8px, transparent 2.3px),
+    radial-gradient(circle at 80% 28%, rgba(255, 255, 255, 0.7) 0 1.9px, transparent 2.4px),
+    linear-gradient(180deg, rgba(191, 219, 254, 0.18), rgba(148, 163, 184, 0.05));
   animation: snowShift 16s linear infinite;
 }
 
 body.weather-storm::before {
   opacity: 1;
   background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.2), rgba(15, 23, 42, 0.4)),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.3), rgba(15, 23, 42, 0.45)),
     repeating-linear-gradient(
       180deg,
       rgba(148, 163, 184, 0.35) 0,
       rgba(148, 163, 184, 0.35) 2px,
       transparent 2px,
-      transparent 10px
+      transparent 12px
     );
+}
+
+body.weather-storm::after {
+  opacity: 1;
+  inset: 18% auto auto 70%;
+  width: 120px;
+  height: 160px;
+  background: linear-gradient(135deg, rgba(250, 250, 250, 0) 0%, rgba(250, 250, 250, 0) 37%, rgba(250, 250, 250, 0.8) 38%, rgba(250, 250, 250, 0.8) 42%, rgba(250, 250, 250, 0) 43%, rgba(250, 250, 250, 0) 100%);
+  transform: skewX(-18deg);
+  box-shadow: -70px 65px 0 rgba(250, 250, 250, 0.2);
 }
 
 button,
