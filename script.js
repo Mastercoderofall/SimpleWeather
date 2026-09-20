@@ -55,6 +55,79 @@ function setSearchStatus(message, isError = false) {
   searchStatusElement.classList.toggle("error", isError);
 }
 
+function getMinutesFromTime(timeString, timeZone) {
+  const date = new Date(timeString);
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(date);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 0);
+  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? 0);
+
+  return hour * 60 + minute;
+}
+
+function isDaytime(currentTime, sunriseTime, sunsetTime, timeZone) {
+  const currentMinutes = getMinutesFromTime(currentTime, timeZone);
+  const sunriseMinutes = getMinutesFromTime(sunriseTime, timeZone);
+  const sunsetMinutes = getMinutesFromTime(sunsetTime, timeZone);
+
+  return currentMinutes >= sunriseMinutes && currentMinutes < sunsetMinutes;
+}
+
+function getWeatherThemeCode(code, isNight) {
+  const weatherCode = Number(code);
+
+  if ([0, 1].includes(weatherCode)) {
+    return isNight ? "clear-night" : "clear-day";
+  }
+
+  if ([2, 3].includes(weatherCode)) {
+    return "cloudy";
+  }
+
+  if ([45, 48].includes(weatherCode)) {
+    return "fog";
+  }
+
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode)) {
+    return "rain";
+  }
+
+  if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
+    return "snow";
+  }
+
+  if ([95, 96, 99].includes(weatherCode)) {
+    return "storm";
+  }
+
+  return isNight ? "clear-night" : "clear-day";
+}
+
+function applyWeatherTheme(code, currentTime, sunriseTime, sunsetTime, timeZone) {
+  const isNight = !isDaytime(currentTime, sunriseTime, sunsetTime, timeZone);
+  const themeCode = getWeatherThemeCode(code, isNight);
+
+  document.body.classList.remove(
+    "theme-day",
+    "theme-night",
+    "weather-clear-day",
+    "weather-clear-night",
+    "weather-cloudy",
+    "weather-fog",
+    "weather-rain",
+    "weather-snow",
+    "weather-storm",
+  );
+
+  document.body.classList.add(isNight ? "theme-night" : "theme-day", `weather-${themeCode}`);
+}
+
 function getWeatherInfo(code) {
   const weatherMap = {
     0: { label: "Clear sky", icon: "☀️" },
@@ -346,7 +419,7 @@ function setUnit(unit) {
 }
 
 async function fetchWeatherForCoordinates(latitude, longitude, locationLabel) {
-  const apiUrl = `${weatherApiBase}?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,weather_code,windspeed_10m&temperature_unit=celsius&windspeed_unit=mph&timezone=auto`;
+  const apiUrl = `${weatherApiBase}?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,weather_code,windspeed_10m&daily=sunrise,sunset&temperature_unit=celsius&windspeed_unit=mph&timezone=auto`;
 
   try {
     const response = await fetch(apiUrl);
@@ -357,10 +430,15 @@ async function fetchWeatherForCoordinates(latitude, longitude, locationLabel) {
 
     const data = await response.json();
     const current = data.current || {};
+    const daily = data.daily || {};
     const tempC = Number(current.temperature_2m ?? 0);
     const feelsLikeC = Number(current.apparent_temperature ?? tempC);
     const weatherCode = Number(current.weather_code ?? 0);
     const weatherInfo = getWeatherInfo(weatherCode);
+    const currentTime = current.time || new Date().toISOString();
+    const sunriseTime = daily.sunrise?.[0] || "1970-01-01T06:00";
+    const sunsetTime = daily.sunset?.[0] || "1970-01-01T18:00";
+    const timeZone = data.timezone || "UTC";
 
     weatherData = {
       celsius: tempC,
@@ -370,6 +448,7 @@ async function fetchWeatherForCoordinates(latitude, longitude, locationLabel) {
       condition: weatherInfo.label,
     };
 
+    applyWeatherTheme(weatherCode, currentTime, sunriseTime, sunsetTime, timeZone);
     locationNameElement.textContent = locationLabel;
     conditionBadgeElement.textContent = weatherInfo.label;
     weatherDescriptionElement.textContent = `${weatherInfo.label} today in ${locationLabel}.`;

@@ -13,6 +13,19 @@
   --error: #dc2626;
 }
 
+body.theme-night {
+  --bg-start: #020817;
+  --bg-end: #111827;
+  --card: rgba(15, 23, 42, 0.76);
+  --primary: #e2e8f0;
+  --secondary: #cbd5e1;
+  --accent: #60a5fa;
+  --accent-strong: #3b82f6;
+  --accent-soft: rgba(96, 165, 250, 0.18);
+  --shadow: rgba(2, 6, 23, 0.6);
+  --border: rgba(148, 163, 184, 0.18);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -23,8 +36,92 @@ body {
   display: grid;
   place-items: center;
   font-family: Arial, Helvetica, sans-serif;
-  background: radial-gradient(circle at top, #f8fbff 0%, var(--bg-start) 28%, var(--bg-end) 100%);
+  background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
   color: var(--primary);
+  position: relative;
+  overflow-x: hidden;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 0;
+}
+
+body.weather-clear-day::before {
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+}
+
+body.weather-clear-night::before {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.5) 0 2px, transparent 3px),
+    radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.45) 0 2px, transparent 3px),
+    radial-gradient(circle at 68% 26%, rgba(255, 255, 255, 0.4) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 18%, rgba(255, 255, 255, 0.45) 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.28) 0 2px, transparent 3px),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.1), rgba(15, 23, 42, 0));
+}
+
+body.weather-cloudy::before {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.9) 0 28%, transparent 29%),
+    radial-gradient(circle at 38% 30%, rgba(255, 255, 255, 0.75) 0 22%, transparent 23%),
+    radial-gradient(circle at 58% 30%, rgba(255, 255, 255, 0.72) 0 25%, transparent 26%),
+    linear-gradient(180deg, rgba(148, 163, 184, 0.08), rgba(148, 163, 184, 0.02));
+}
+
+body.weather-fog::before {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.75), transparent 30%),
+    radial-gradient(circle at 70% 45%, rgba(255, 255, 255, 0.68), transparent 32%),
+    linear-gradient(180deg, rgba(203, 213, 225, 0.28), rgba(148, 163, 184, 0.12));
+  filter: blur(18px);
+}
+
+body.weather-rain::before {
+  opacity: 1;
+  background:
+    linear-gradient(180deg, rgba(14, 116, 144, 0.2), rgba(15, 23, 42, 0.28)),
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.3) 0,
+      rgba(255, 255, 255, 0.3) 2px,
+      transparent 2px,
+      transparent 12px
+    );
+  animation: rainShift 0.8s linear infinite;
+}
+
+body.weather-snow::before {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.7) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 42% 30%, rgba(255, 255, 255, 0.65) 0 2px, transparent 2.6px),
+    radial-gradient(circle at 62% 16%, rgba(255, 255, 255, 0.75) 0 1.8px, transparent 2.3px),
+    linear-gradient(180deg, rgba(191, 219, 254, 0.15), rgba(148, 163, 184, 0.05));
+  animation: snowShift 16s linear infinite;
+}
+
+body.weather-storm::before {
+  opacity: 1;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.2), rgba(15, 23, 42, 0.4)),
+    repeating-linear-gradient(
+      180deg,
+      rgba(148, 163, 184, 0.35) 0,
+      rgba(148, 163, 184, 0.35) 2px,
+      transparent 2px,
+      transparent 10px
+    );
 }
 
 button,
@@ -34,6 +131,29 @@ input {
 
 .app-container {
   width: min(92vw, 720px);
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes rainShift {
+  0% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes snowShift {
+  0% {
+    transform: translateY(-12px) translateX(-8px);
+  }
+  50% {
+    transform: translateY(6px) translateX(8px);
+  }
+  100% {
+    transform: translateY(14px) translateX(-6px);
+  }
 }
 
 .topbar {
