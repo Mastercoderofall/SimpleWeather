@@ -9,14 +9,22 @@
   <body>
     <div class="app-container">
       <header class="topbar">
-        <div>
+        <div class="brand-block">
           <p class="eyebrow">Forecast</p>
-          <h1>Weather App</h1>
+          <h1>Weather Outfit</h1>
         </div>
 
-        <div class="unit-toggle" aria-label="Temperature unit switch">
-          <button class="unit-btn active" data-unit="C" type="button">°C</button>
-          <button class="unit-btn" data-unit="F" type="button">°F</button>
+        <div class="header-controls">
+          <form id="city-search-form" class="search-form" aria-label="Search for a city">
+            <label class="sr-only" for="city-search">Search city</label>
+            <input id="city-search" type="search" name="city" placeholder="Search city" value="Detroit" />
+            <button type="submit">Search</button>
+          </form>
+
+          <div class="unit-toggle" aria-label="Temperature unit switch">
+            <button class="unit-btn active" data-unit="C" type="button">°C</button>
+            <button class="unit-btn" data-unit="F" type="button">°F</button>
+          </div>
         </div>
       </header>
 
@@ -24,7 +32,7 @@
         <div class="location-row">
           <div>
             <p class="location-label">Current location</p>
-            <h2>Detroit, MI</h2>
+            <h2 id="location-name">Detroit, MI</h2>
           </div>
           <span id="weather-icon" class="weather-icon" aria-label="Weather icon">☀️</span>
         </div>
@@ -50,8 +58,13 @@
         </div>
 
         <section class="outfit-panel">
-          <h3>What to wear</h3>
+          <div class="outfit-header">
+            <h3>What to wear</h3>
+            <span id="condition-badge" class="condition-badge">Sunny</span>
+          </div>
           <p id="outfit-message">Checking the weather to suggest your outfit...</p>
+          <div id="outfit-gallery" class="outfit-gallery" aria-live="polite"></div>
+          <p id="search-status" class="search-status" aria-live="polite"></p>
         </section>
       </main>
     </div>

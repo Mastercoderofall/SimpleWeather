@@ -1,5 +1,13 @@
-const apiUrl =
-  "https://api.open-meteo.com/v1/forecast?latitude=42.33&longitude=-83.05&current=temperature_2m,weather_code,windspeed_10m&temperature_unit=celsius&windspeed_unit=mph";
+const defaultCity = {
+  name: "Detroit",
+  admin1: "Michigan",
+  country: "US",
+  latitude: 42.33,
+  longitude: -83.05,
+};
+
+const weatherApiBase = "https://api.open-meteo.com/v1/forecast";
+const geocodingApi = "https://geocoding-api.open-meteo.com/v1/search";
 
 const temperatureElement = document.getElementById("temperature");
 const weatherDescriptionElement = document.getElementById("weather-description");
@@ -7,18 +15,44 @@ const outfitMessageElement = document.getElementById("outfit-message");
 const weatherIconElement = document.getElementById("weather-icon");
 const feelsLikeElement = document.getElementById("feels-like");
 const windSpeedElement = document.getElementById("wind-speed");
+const locationNameElement = document.getElementById("location-name");
+const conditionBadgeElement = document.getElementById("condition-badge");
+const outfitGalleryElement = document.getElementById("outfit-gallery");
+const citySearchForm = document.getElementById("city-search-form");
+const citySearchInput = document.getElementById("city-search");
+const searchStatusElement = document.getElementById("search-status");
 const unitButtons = document.querySelectorAll(".unit-btn");
 
 let selectedUnit = "C";
 let weatherData = {
   celsius: null,
   fahrenheit: null,
+  feelsLikeC: null,
   windSpeed: null,
   condition: "",
 };
 
 function toFahrenheit(celsius) {
   return (celsius * 9) / 5 + 32;
+}
+
+function formatLocationName(location) {
+  const parts = [location.name];
+
+  if (location.admin1 && location.admin1 !== location.name) {
+    parts.push(location.admin1);
+  }
+
+  if (location.country && !parts.includes(location.country)) {
+    parts.push(location.country);
+  }
+
+  return parts.join(", ");
+}
+
+function setSearchStatus(message, isError = false) {
+  searchStatusElement.textContent = message;
+  searchStatusElement.classList.toggle("error", isError);
 }
 
 function getWeatherInfo(code) {
@@ -56,28 +90,228 @@ function getWeatherInfo(code) {
   return weatherMap[code] || { label: "Weather conditions", icon: "🌤️" };
 }
 
-function getOutfitSuggestion(tempC, condition) {
+function getOutfitSuggestion(tempC, condition, windSpeed) {
+  const base = {
+    title: "Layer up",
+    description: "A smart mix of comfort and practicality will get you through the day.",
+    items: [
+      {
+        name: "Light layer",
+        detail: "Easy to add or remove",
+        image:
+          "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
+        alt: "Casual light layered outfit",
+      },
+      {
+        name: "Everyday essentials",
+        detail: "Balanced for current conditions",
+        image:
+          "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80",
+        alt: "Everyday casual outfit",
+      },
+      {
+        name: "Weather-ready finish",
+        detail: "Comfortable final layer",
+        image:
+          "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
+        alt: "Weather-ready outfit accessories",
+      },
+    ],
+  };
+
   if (tempC >= 30) {
-    return "It’s hot outside! Wear a breathable T-shirt, shorts, sunglasses, and keep water with you.";
+    return {
+      title: "Hot day essentials",
+      description: "Sunny and humid, so choose breathable fabrics and keep cool.",
+      items: [
+        {
+          name: "Breathable tee",
+          detail: "Loose-fit cotton top",
+          image:
+            "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
+          alt: "Light summer T-shirt outfit",
+        },
+        {
+          name: "Shorts and sandals",
+          detail: "Airy and easy-moving",
+          image:
+            "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=80",
+          alt: "Shorts and sandals summer outfit",
+        },
+        {
+          name: "Sunglasses",
+          detail: "Sun protection and style",
+          image:
+            "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80",
+          alt: "Sunglasses and warm weather style",
+        },
+      ],
+    };
   }
 
   if (tempC >= 24) {
-    return "Warm and comfortable. Go with a light T-shirt, jeans, and breathable sneakers.";
+    return {
+      title: "Warm and easy",
+      description: "Comfortable temperatures call for light layers and casual pairing.",
+      items: [
+        {
+          name: "Light tee",
+          detail: "Soft cotton for warmer hours",
+          image:
+            "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
+          alt: "Light shirt outfit",
+        },
+        {
+          name: "Straight-leg jeans",
+          detail: "Easy, classic fit",
+          image:
+            "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=80",
+          alt: "Casual jeans outfit",
+        },
+        {
+          name: "Sneakers",
+          detail: "Great for everyday movement",
+          image:
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80",
+          alt: "Sneakers outfit",
+        },
+      ],
+    };
   }
 
   if (tempC >= 18) {
-    return "Mild day ahead. A light long-sleeve shirt, casual pants, and a light jacket will be perfect.";
+    return {
+      title: "Mild-day style",
+      description: "A light layer works well with the comfortable conditions outside.",
+      items: [
+        {
+          name: "Long-sleeve shirt",
+          detail: "Light but polished",
+          image:
+            "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
+          alt: "Long sleeve shirt outfit",
+        },
+        {
+          name: "Casual trousers",
+          detail: "Relaxed and comfortable",
+          image:
+            "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
+          alt: "Casual trousers outfit",
+        },
+        {
+          name: "Light jacket",
+          detail: "Perfect for evening coolness",
+          image:
+            "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
+          alt: "Light jacket outfit",
+        },
+      ],
+    };
   }
 
   if (tempC >= 10) {
-    return "Cooler weather. Layer a sweater or hoodie with jeans and a light coat if needed.";
+    return {
+      title: "Cool weather layering",
+      description: "A sweater and a light outer layer will keep you comfortable in the breeze.",
+      items: [
+        {
+          name: "Hoodie",
+          detail: "Warm but easy to layer",
+          image:
+            "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
+          alt: "Hoodie outfit",
+        },
+        {
+          name: "Jeans",
+          detail: "Classic insulated staple",
+          image:
+            "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=80",
+          alt: "Jeans outfit",
+        },
+        {
+          name: "Warm coat",
+          detail: "Essential on cooler mornings",
+          image:
+            "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
+          alt: "Warm coat outfit",
+        },
+      ],
+    };
   }
 
   if (tempC >= 0) {
-    return "Cold outside. Wear a warm jacket, scarf, gloves, and insulated boots.";
+    return {
+      title: "Cold-weather gear",
+      description: "Bundle up to stay warm and comfortable in colder air.",
+      items: [
+        {
+          name: "Thermal base",
+          detail: "Keeps warmth close to the body",
+          image:
+            "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+          alt: "Thermal winter clothing",
+        },
+        {
+          name: "Wool jacket",
+          detail: "Protects against cold wind",
+          image:
+            "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
+          alt: "Wool coat winter outfit",
+        },
+        {
+          name: "Scarf and gloves",
+          detail: "Important for wind chill",
+          image:
+            "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80",
+          alt: "Cold-weather accessories",
+        },
+      ],
+    };
   }
 
-  return "Very cold! Bundle up with a heavy coat, thermal layers, gloves, and a hat.";
+  return {
+    title: "Arctic style",
+    description: "Very cold conditions need serious insulation and extra layers.",
+    items: [
+      {
+        name: "Thermal layers",
+        detail: "Base protection against freezing air",
+        image:
+          "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+        alt: "Thermal winter outfit",
+      },
+      {
+        name: "Heavy coat",
+        detail: "Maximum warmth and coverage",
+        image:
+          "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
+          alt: "Heavy winter coat outfit",
+      },
+      {
+        name: "Boots and hat",
+        detail: "Keeps feet and head protected",
+        image:
+          "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=80",
+        alt: "Winter boots and hat outfit",
+      },
+    ],
+  };
+}
+
+function renderOutfitGallery(suggestion) {
+  outfitGalleryElement.innerHTML = suggestion.items
+    .map(
+      (item) => `
+        <article class="outfit-card">
+          <img src="${item.image}" alt="${item.alt}" />
+          <div class="outfit-card-copy">
+            <h4>${item.name}</h4>
+            <p>${item.detail}</p>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
 }
 
 function updateTemperatureDisplay() {
@@ -89,14 +323,12 @@ function updateTemperatureDisplay() {
   }
 
   const displayTemp =
-    selectedUnit === "C"
-      ? weatherData.celsius
-      : toFahrenheit(weatherData.celsius);
+    selectedUnit === "C" ? weatherData.celsius : toFahrenheit(weatherData.celsius);
 
   const displayFeelsLike =
     selectedUnit === "C"
-      ? weatherData.celsius
-      : toFahrenheit(weatherData.celsius);
+      ? weatherData.feelsLikeC ?? weatherData.celsius
+      : toFahrenheit(weatherData.feelsLikeC ?? weatherData.celsius);
 
   temperatureElement.textContent = `${displayTemp.toFixed(1)}°${selectedUnit}`;
   feelsLikeElement.textContent = `${displayFeelsLike.toFixed(1)}°${selectedUnit}`;
@@ -113,7 +345,9 @@ function setUnit(unit) {
   updateTemperatureDisplay();
 }
 
-async function fetchWeather() {
+async function fetchWeatherForCoordinates(latitude, longitude, locationLabel) {
+  const apiUrl = `${weatherApiBase}?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,weather_code,windspeed_10m&temperature_unit=celsius&windspeed_unit=mph&timezone=auto`;
+
   try {
     const response = await fetch(apiUrl);
 
@@ -122,22 +356,30 @@ async function fetchWeather() {
     }
 
     const data = await response.json();
-    const current = data.current;
-    const tempC = current.temperature_2m;
-    const weatherCode = current.weather_code;
+    const current = data.current || {};
+    const tempC = Number(current.temperature_2m ?? 0);
+    const feelsLikeC = Number(current.apparent_temperature ?? tempC);
+    const weatherCode = Number(current.weather_code ?? 0);
     const weatherInfo = getWeatherInfo(weatherCode);
 
     weatherData = {
       celsius: tempC,
       fahrenheit: toFahrenheit(tempC),
-      windSpeed: current.windspeed_10m,
+      feelsLikeC,
+      windSpeed: Number(current.windspeed_10m ?? 0),
       condition: weatherInfo.label,
     };
 
-    weatherDescriptionElement.textContent = `${weatherInfo.label} today.`;
+    locationNameElement.textContent = locationLabel;
+    conditionBadgeElement.textContent = weatherInfo.label;
+    weatherDescriptionElement.textContent = `${weatherInfo.label} today in ${locationLabel}.`;
     weatherIconElement.textContent = weatherInfo.icon;
-    outfitMessageElement.textContent = getOutfitSuggestion(tempC, weatherInfo.label);
+
+    const suggestion = getOutfitSuggestion(tempC, weatherInfo.label, weatherData.windSpeed);
+    outfitMessageElement.textContent = `${suggestion.title}: ${suggestion.description}`;
+    renderOutfitGallery(suggestion);
     updateTemperatureDisplay();
+    setSearchStatus(`Updated weather for ${locationLabel}.`);
   } catch (error) {
     weatherDescriptionElement.textContent = "Unable to load weather right now.";
     weatherIconElement.textContent = "⚠️";
@@ -145,6 +387,41 @@ async function fetchWeather() {
     temperatureElement.textContent = "--";
     feelsLikeElement.textContent = "--";
     windSpeedElement.textContent = "--";
+    setSearchStatus("Please try a different city or check your connection.", true);
+  }
+}
+
+async function searchCity(cityName) {
+  const trimmedCity = cityName.trim();
+
+  if (!trimmedCity) {
+    setSearchStatus("Please enter a city name.", true);
+    return;
+  }
+
+  setSearchStatus("Searching for your city...");
+
+  try {
+    const response = await fetch(
+      `${geocodingApi}?name=${encodeURIComponent(trimmedCity)}&count=1&language=en&format=json`,
+    );
+
+    if (!response.ok) {
+      throw new Error("City lookup failed.");
+    }
+
+    const data = await response.json();
+    const result = data.results?.[0];
+
+    if (!result) {
+      throw new Error("No matching city found.");
+    }
+
+    const locationLabel = formatLocationName(result);
+    citySearchInput.value = result.name;
+    await fetchWeatherForCoordinates(result.latitude, result.longitude, locationLabel);
+  } catch (error) {
+    setSearchStatus("Sorry, we couldn’t find that city. Try another name.", true);
   }
 }
 
@@ -152,4 +429,9 @@ unitButtons.forEach((button) => {
   button.addEventListener("click", () => setUnit(button.dataset.unit));
 });
 
-fetchWeather();
+citySearchForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  searchCity(citySearchInput.value);
+});
+
+fetchWeatherForCoordinates(defaultCity.latitude, defaultCity.longitude, formatLocationName(defaultCity));
