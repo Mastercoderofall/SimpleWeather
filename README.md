@@ -1,2 +1,2 @@
 # SimpleWeather
-A Simple Weather
+A Simple Weather App
