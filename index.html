@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Outfit App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Forecast</p>
+          <h1>Weather App</h1>
+        </div>
+
+        <div class="unit-toggle" aria-label="Temperature unit switch">
+          <button class="unit-btn active" data-unit="C" type="button">°C</button>
+          <button class="unit-btn" data-unit="F" type="button">°F</button>
+        </div>
+      </header>
+
+      <main class="weather-card">
+        <div class="location-row">
+          <div>
+            <p class="location-label">Current location</p>
+            <h2>Detroit, MI</h2>
+          </div>
+          <span id="weather-icon" class="weather-icon" aria-label="Weather icon">☀️</span>
+        </div>
+
+        <p id="weather-description" class="weather-description">Loading weather...</p>
+
+        <div class="temperature-box">
+          <div class="temperature-main">
+            <span class="temp-label">Temperature</span>
+            <strong id="temperature">--</strong>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span>Feels like</span>
+            <strong id="feels-like">--</strong>
+          </div>
+          <div class="stat-card">
+            <span>Wind</span>
+            <strong id="wind-speed">--</strong>
+          </div>
+        </div>
+
+        <section class="outfit-panel">
+          <h3>What to wear</h3>
+          <p id="outfit-message">Checking the weather to suggest your outfit...</p>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
