@@ -100,35 +100,45 @@ function updateWardrobeSuggestion(tempC) {
   }
 
   const normalizedClothes = clothingItems.map((item) => item.toLowerCase());
-  const matchesItem = (keywords) =>
-    normalizedClothes.some((item) => keywords.some((keyword) => item.includes(keyword)));
 
-  let suggestion = "No exact match found, but a light layer will work well.";
+  const getSavedMatch = (keywords) => {
+    const match = normalizedClothes.find((item) =>
+      keywords.some((keyword) => item.includes(keyword)),
+    );
+
+    return match ? clothingItems[normalizedClothes.indexOf(match)] : "";
+  };
+
+  let suggestion = "General suggestion: wear comfortable layers for the day.";
 
   if (tempC < 50) {
-    if (matchesItem(["hoodie"])) {
-      suggestion = "Wear your Hoodie.";
-    } else if (matchesItem(["jacket", "coat"])) {
-      suggestion = "Wear your jacket or coat.";
-    } else if (matchesItem(["sweater"])) {
-      suggestion = "Wear your sweater.";
-    }
-  } else if (tempC < 70) {
-    if (matchesItem(["light jacket"])) {
-      suggestion = "Wear your light jacket.";
-    } else if (matchesItem(["hoodie"])) {
-      suggestion = "Wear your hoodie.";
-    } else if (matchesItem(["shirt", "long sleeve", "top"])) {
-      suggestion = "Wear a shirt or light top.";
-    }
-  } else {
-    if (matchesItem(["t-shirt", "tee", "tank top", "tanktop"])) {
-      suggestion = "Wear a T-shirt or tank top.";
-    } else if (matchesItem(["shorts"])) {
-      suggestion = "Wear your shorts.";
-    } else if (matchesItem(["dress"])) {
-      suggestion = "Wear your dress for the warmer weather.";
-    }
+    const match =
+      getSavedMatch(["hoodie"]) ||
+      getSavedMatch(["jacket", "coat"]) ||
+      getSavedMatch(["pants", "jeans", "trousers"]);
+
+    suggestion = match ? `Wear your ${match}.` : "General suggestion: layer up with a warm jacket and pants.";
+  } else if (tempC >= 50 && tempC <= 70) {
+    const match =
+      getSavedMatch(["shirt", "long sleeve", "sweater", "light layer", "cardigan"]) ||
+      getSavedMatch(["hoodie"]) ||
+      getSavedMatch(["jacket", "coat"]);
+
+    suggestion = match ? `Wear your ${match}.` : "General suggestion: choose a comfortable shirt or light layer.";
+  } else if (tempC > 70 && tempC <= 85) {
+    const match =
+      getSavedMatch(["t-shirt", "tee", "shirt"]) ||
+      getSavedMatch(["shorts"]) ||
+      getSavedMatch(["light layer"]);
+
+    suggestion = match ? `Wear your ${match}.` : "General suggestion: stick to breathable, light clothing.";
+  } else if (tempC > 85) {
+    const match =
+      getSavedMatch(["tank top", "tanktop"]) ||
+      getSavedMatch(["shorts"]) ||
+      getSavedMatch(["very light", "light clothing"]);
+
+    suggestion = match ? `Wear your ${match}.` : "General suggestion: choose very light, breathable clothing.";
   }
 
   wardrobeSuggestionTextElement.textContent = suggestion;
