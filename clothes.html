@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Clothes</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="clothes-page">
+      <header class="clothes-header">
+        <p class="eyebrow">Wardrobe</p>
+        <h1>My Clothes</h1>
+        <a href="index.html" class="page-link">Back to Weather</a>
+      </header>
+
+      <div class="clothes-card">
+        <form id="clothes-form" class="clothes-form" aria-label="Save clothing item">
+          <label for="clothes-input">Add a clothing item</label>
+          <input id="clothes-input" type="text" name="clothes" placeholder="Type a clothing item" />
+          <button type="submit">Save Item</button>
+        </form>
+
+        <ul id="clothes-list" class="clothes-list" aria-live="polite"></ul>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

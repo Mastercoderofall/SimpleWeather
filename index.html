@@ -15,11 +15,15 @@
         </div>
 
         <div class="header-controls">
+          <a href="clothes.html" class="page-link">My Clothes</a>
+
           <form id="city-search-form" class="search-form" aria-label="Search for a city">
             <label class="sr-only" for="city-search">Search city</label>
             <input id="city-search" type="search" name="city" placeholder="Search city" value="Detroit" />
             <button type="submit">Search</button>
           </form>
+
+          <button id="save-favorite-city" class="secondary-btn" type="button">Save Favorite City</button>
 
           <div class="unit-toggle" aria-label="Temperature unit switch">
             <button class="unit-btn active" data-unit="C" type="button">°C</button>
@@ -63,6 +67,10 @@
             <span id="condition-badge" class="condition-badge">Sunny</span>
           </div>
           <p id="outfit-message">Checking the weather to suggest your outfit...</p>
+          <div id="wardrobe-suggestion" class="wardrobe-suggestion" aria-live="polite">
+            <h4>Wardrobe match</h4>
+            <p id="wardrobe-suggestion-text">Add some clothes to compare with the forecast.</p>
+          </div>
           <div id="outfit-gallery" class="outfit-gallery" aria-live="polite"></div>
           <p id="search-status" class="search-status" aria-live="polite"></p>
         </section>

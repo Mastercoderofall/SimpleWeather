@@ -8,6 +8,8 @@ const defaultCity = {
 
 const weatherApiBase = "https://api.open-meteo.com/v1/forecast";
 const geocodingApi = "https://geocoding-api.open-meteo.com/v1/search";
+const favoriteCityKey = "favoriteCity";
+const clothesKey = "clothes";
 
 const temperatureElement = document.getElementById("temperature");
 const weatherDescriptionElement = document.getElementById("weather-description");
@@ -18,9 +20,15 @@ const windSpeedElement = document.getElementById("wind-speed");
 const locationNameElement = document.getElementById("location-name");
 const conditionBadgeElement = document.getElementById("condition-badge");
 const outfitGalleryElement = document.getElementById("outfit-gallery");
+const wardrobeSuggestionElement = document.getElementById("wardrobe-suggestion");
+const wardrobeSuggestionTextElement = document.getElementById("wardrobe-suggestion-text");
 const citySearchForm = document.getElementById("city-search-form");
 const citySearchInput = document.getElementById("city-search");
+const saveFavoriteCityButton = document.getElementById("save-favorite-city");
 const searchStatusElement = document.getElementById("search-status");
+const clothesForm = document.getElementById("clothes-form");
+const clothesInput = document.getElementById("clothes-input");
+const clothesListElement = document.getElementById("clothes-list");
 const unitButtons = document.querySelectorAll(".unit-btn");
 
 let selectedUnit = "C";
@@ -31,6 +39,100 @@ let weatherData = {
   windSpeed: null,
   condition: "",
 };
+
+function getSavedFavoriteCity() {
+  try {
+    return localStorage.getItem(favoriteCityKey) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function saveFavoriteCity(cityName) {
+  const city = (cityName || citySearchInput?.value || "").trim();
+
+  if (!city) {
+    setSearchStatus("Please enter a city name before saving it.", true);
+    return;
+  }
+
+  try {
+    localStorage.setItem(favoriteCityKey, city);
+    setSearchStatus(`Saved ${city} as your favorite city.`);
+  } catch (error) {
+    setSearchStatus("Your browser blocked local storage. Please try again.", true);
+  }
+}
+
+function getSavedClothes() {
+  try {
+    const storedValue = localStorage.getItem(clothesKey);
+    const parsed = storedValue ? JSON.parse(storedValue) : [];
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.map((item) => String(item).trim()).filter(Boolean);
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveClothes(clothes) {
+  try {
+    localStorage.setItem(clothesKey, JSON.stringify(clothes));
+  } catch (error) {
+    console.error("Unable to save clothes:", error);
+  }
+}
+
+function updateWardrobeSuggestion(tempC) {
+  if (!wardrobeSuggestionElement || !wardrobeSuggestionTextElement) {
+    return;
+  }
+
+  const clothingItems = getSavedClothes();
+
+  if (!clothingItems.length) {
+    wardrobeSuggestionTextElement.textContent = "Add some clothes to compare with the forecast.";
+    return;
+  }
+
+  const normalizedClothes = clothingItems.map((item) => item.toLowerCase());
+  const matchesItem = (keywords) =>
+    normalizedClothes.some((item) => keywords.some((keyword) => item.includes(keyword)));
+
+  let suggestion = "No exact match found, but a light layer will work well.";
+
+  if (tempC < 50) {
+    if (matchesItem(["hoodie"])) {
+      suggestion = "Wear your Hoodie.";
+    } else if (matchesItem(["jacket", "coat"])) {
+      suggestion = "Wear your jacket or coat.";
+    } else if (matchesItem(["sweater"])) {
+      suggestion = "Wear your sweater.";
+    }
+  } else if (tempC < 70) {
+    if (matchesItem(["light jacket"])) {
+      suggestion = "Wear your light jacket.";
+    } else if (matchesItem(["hoodie"])) {
+      suggestion = "Wear your hoodie.";
+    } else if (matchesItem(["shirt", "long sleeve", "top"])) {
+      suggestion = "Wear a shirt or light top.";
+    }
+  } else {
+    if (matchesItem(["t-shirt", "tee", "tank top", "tanktop"])) {
+      suggestion = "Wear a T-shirt or tank top.";
+    } else if (matchesItem(["shorts"])) {
+      suggestion = "Wear your shorts.";
+    } else if (matchesItem(["dress"])) {
+      suggestion = "Wear your dress for the warmer weather.";
+    }
+  }
+
+  wardrobeSuggestionTextElement.textContent = suggestion;
+}
 
 function toFahrenheit(celsius) {
   return (celsius * 9) / 5 + 32;
@@ -51,6 +153,10 @@ function formatLocationName(location) {
 }
 
 function setSearchStatus(message, isError = false) {
+  if (!searchStatusElement) {
+    return;
+  }
+
   searchStatusElement.textContent = message;
   searchStatusElement.classList.toggle("error", isError);
 }
@@ -388,6 +494,10 @@ function renderOutfitGallery(suggestion) {
 }
 
 function updateTemperatureDisplay() {
+  if (!temperatureElement || !feelsLikeElement || !windSpeedElement) {
+    return;
+  }
+
   if (weatherData.celsius === null) {
     temperatureElement.textContent = "--";
     feelsLikeElement.textContent = "--";
@@ -448,24 +558,61 @@ async function fetchWeatherForCoordinates(latitude, longitude, locationLabel) {
       condition: weatherInfo.label,
     };
 
-    applyWeatherTheme(weatherCode, currentTime, sunriseTime, sunsetTime, timeZone);
-    locationNameElement.textContent = locationLabel;
-    conditionBadgeElement.textContent = weatherInfo.label;
-    weatherDescriptionElement.textContent = `${weatherInfo.label} today in ${locationLabel}.`;
-    weatherIconElement.textContent = weatherInfo.icon;
+    if (locationNameElement) {
+      locationNameElement.textContent = locationLabel;
+    }
+
+    if (conditionBadgeElement) {
+      conditionBadgeElement.textContent = weatherInfo.label;
+    }
+
+    if (weatherDescriptionElement) {
+      weatherDescriptionElement.textContent = `${weatherInfo.label} today in ${locationLabel}.`;
+    }
+
+    if (weatherIconElement) {
+      weatherIconElement.textContent = weatherInfo.icon;
+    }
 
     const suggestion = getOutfitSuggestion(tempC, weatherInfo.label, weatherData.windSpeed);
-    outfitMessageElement.textContent = `${suggestion.title}: ${suggestion.description}`;
-    renderOutfitGallery(suggestion);
+
+    if (outfitMessageElement) {
+      outfitMessageElement.textContent = `${suggestion.title}: ${suggestion.description}`;
+    }
+
+    if (outfitGalleryElement) {
+      renderOutfitGallery(suggestion);
+    }
+
+    updateWardrobeSuggestion(tempC);
     updateTemperatureDisplay();
     setSearchStatus(`Updated weather for ${locationLabel}.`);
+    applyWeatherTheme(weatherCode, currentTime, sunriseTime, sunsetTime, timeZone);
   } catch (error) {
-    weatherDescriptionElement.textContent = "Unable to load weather right now.";
-    weatherIconElement.textContent = "⚠️";
-    outfitMessageElement.textContent = "Please try again later for outfit suggestions.";
-    temperatureElement.textContent = "--";
-    feelsLikeElement.textContent = "--";
-    windSpeedElement.textContent = "--";
+    if (weatherDescriptionElement) {
+      weatherDescriptionElement.textContent = "Unable to load weather right now.";
+    }
+
+    if (weatherIconElement) {
+      weatherIconElement.textContent = "⚠️";
+    }
+
+    if (outfitMessageElement) {
+      outfitMessageElement.textContent = "Please try again later for outfit suggestions.";
+    }
+
+    if (temperatureElement) {
+      temperatureElement.textContent = "--";
+    }
+
+    if (feelsLikeElement) {
+      feelsLikeElement.textContent = "--";
+    }
+
+    if (windSpeedElement) {
+      windSpeedElement.textContent = "--";
+    }
+
     setSearchStatus("Please try a different city or check your connection.", true);
   }
 }
@@ -497,20 +644,88 @@ async function searchCity(cityName) {
     }
 
     const locationLabel = formatLocationName(result);
-    citySearchInput.value = result.name;
+
+    if (citySearchInput) {
+      citySearchInput.value = result.name;
+    }
+
     await fetchWeatherForCoordinates(result.latitude, result.longitude, locationLabel);
   } catch (error) {
     setSearchStatus("Sorry, we couldn’t find that city. Try another name.", true);
   }
 }
 
+function renderSavedClothes() {
+  if (!clothesListElement) {
+    return;
+  }
+
+  const clothes = getSavedClothes();
+
+  clothesListElement.innerHTML = clothes.length
+    ? clothes.map((item) => `<li>${item}</li>`).join("")
+    : "<li>No clothes saved yet.</li>";
+}
+
+function handleClothesSubmit(event) {
+  event.preventDefault();
+
+  if (!clothesInput) {
+    return;
+  }
+
+  const item = clothesInput.value.trim();
+
+  if (!item) {
+    return;
+  }
+
+  const clothes = getSavedClothes();
+  clothes.push(item);
+  saveClothes(clothes);
+  renderSavedClothes();
+  clothesInput.value = "";
+}
+
+if (saveFavoriteCityButton) {
+  saveFavoriteCityButton.addEventListener("click", () => saveFavoriteCity(citySearchInput?.value || getSavedFavoriteCity()));
+}
+
 unitButtons.forEach((button) => {
   button.addEventListener("click", () => setUnit(button.dataset.unit));
 });
 
-citySearchForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  searchCity(citySearchInput.value);
-});
+if (citySearchForm && citySearchInput) {
+  citySearchForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    searchCity(citySearchInput.value);
+  });
+}
 
-fetchWeatherForCoordinates(defaultCity.latitude, defaultCity.longitude, formatLocationName(defaultCity));
+if (clothesForm) {
+  clothesForm.addEventListener("submit", handleClothesSubmit);
+}
+
+if (citySearchInput) {
+  const savedFavoriteCity = getSavedFavoriteCity();
+
+  if (savedFavoriteCity) {
+    citySearchInput.value = savedFavoriteCity;
+  }
+}
+
+if (temperatureElement) {
+  const savedFavoriteCity = getSavedFavoriteCity();
+
+  if (savedFavoriteCity) {
+    searchCity(savedFavoriteCity);
+  } else {
+    fetchWeatherForCoordinates(defaultCity.latitude, defaultCity.longitude, formatLocationName(defaultCity));
+  }
+} else {
+  renderSavedClothes();
+}
+
+if (clothesListElement) {
+  renderSavedClothes();
+}
