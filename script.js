@@ -12,6 +12,12 @@ const favoriteCityKey = "favoriteCity";
 const clothesKey = "clothes";
 const topsKey = "tops";
 const bottomsKey = "bottoms";
+const hotTopsKey = "hotTops";
+const mildTopsKey = "mildTops";
+const coldTopsKey = "coldTops";
+const hotBottomsKey = "hotBottoms";
+const mildBottomsKey = "mildBottoms";
+const coldBottomsKey = "coldBottoms";
 const coldClothesKey = "coldClothes";
 const mildClothesKey = "mildClothes";
 const hotClothesKey = "hotClothes";
@@ -97,102 +103,56 @@ function saveStoredArray(storageKey, items) {
   }
 }
 
-function classifyClothingItem(item, itemType = "tops") {
-  const normalized = String(item || "").toLowerCase();
-
-  if (itemType === "bottoms") {
-    if (/(sweatpants)/.test(normalized)) {
-      return "cold";
-    }
-
-    if (/(jeans)/.test(normalized)) {
-      return "mild";
-    }
-
-    if (/(shorts)/.test(normalized)) {
-      return "hot";
-    }
-
-    return "mild";
-  }
-
-  if (/(hoodie|jacket|long sleeve)/.test(normalized)) {
+function getTemperatureCategory(tempC) {
+  if (tempC < 50) {
     return "cold";
   }
 
-  if (/(shirt|light long sleeve)/.test(normalized)) {
+  if (tempC <= 70) {
     return "mild";
   }
 
-  if (/(t-shirt|tee|tank top|tanktop)/.test(normalized)) {
-    return "hot";
-  }
-
-  return "mild";
+  return "hot";
 }
 
-function getSuggestedTemperatureGroup(tempC) {
-  if (tempC < 50) {
-    return { clothingGroup: "cold", label: "cold" };
-  }
+function clearLegacyWardrobeData() {
+  const legacyKeys = [topsKey, bottomsKey, clothesKey, coldClothesKey, mildClothesKey, hotClothesKey];
 
-  if (tempC <= 70) {
-    return { clothingGroup: "mild", label: "mild" };
-  }
-
-  if (tempC <= 85) {
-    return { clothingGroup: "hot", label: "warm" };
-  }
-
-  return { clothingGroup: "hot", label: "hot" };
-}
-
-function rebuildTemperatureGroups() {
-  const tops = JSON.parse(localStorage.getItem("tops")) || [];
-  const bottoms = JSON.parse(localStorage.getItem("bottoms")) || [];
-
-  const coldTops = [];
-  const mildTops = [];
-  const hotTops = [];
-  const coldBottoms = [];
-  const mildBottoms = [];
-  const hotBottoms = [];
-
-  tops.forEach((item) => {
-    const group = classifyClothingItem(item, "tops");
-
-    if (group === "cold") {
-      coldTops.push(item);
-    } else if (group === "mild") {
-      mildTops.push(item);
-    } else {
-      hotTops.push(item);
+  legacyKeys.forEach((storageKey) => {
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (error) {
+      // Ignore storage access issues in restricted browser modes.
     }
   });
-
-  bottoms.forEach((item) => {
-    const group = classifyClothingItem(item, "bottoms");
-
-    if (group === "cold") {
-      coldBottoms.push(item);
-    } else if (group === "mild") {
-      mildBottoms.push(item);
-    } else {
-      hotBottoms.push(item);
-    }
-  });
-
-  return { coldTops, mildTops, hotTops, coldBottoms, mildBottoms, hotBottoms };
 }
 
-function updateTemperatureGroupStorage(itemName) {
-  rebuildTemperatureGroups();
+function getWardrobeGroups() {
+  return {
+    hotTops: getStoredArray(hotTopsKey),
+    mildTops: getStoredArray(mildTopsKey),
+    coldTops: getStoredArray(coldTopsKey),
+    hotBottoms: getStoredArray(hotBottomsKey),
+    mildBottoms: getStoredArray(mildBottomsKey),
+    coldBottoms: getStoredArray(coldBottomsKey),
+  };
+}
+
+function rebuildWardrobeGroups() {
+  clearLegacyWardrobeData();
+  return getWardrobeGroups();
 }
 
 function getSavedClothes() {
-  const tops = getStoredArray(topsKey);
-  const bottoms = getStoredArray(bottomsKey);
-  return [...tops, ...bottoms];
+  const groups = getWardrobeGroups();
+  return [
+    ...groups.hotTops,
+    ...groups.mildTops,
+    ...groups.coldTops,
+    ...groups.hotBottoms,
+    ...groups.mildBottoms,
+    ...groups.coldBottoms,
+  ];
 }
 
 function saveClothes(clothes) {
@@ -205,38 +165,25 @@ function updateWardrobeSuggestion(tempC) {
     return;
   }
 
-  const tops = JSON.parse(localStorage.getItem("tops")) || [];
-  const bottoms = JSON.parse(localStorage.getItem("bottoms")) || [];
-  const { coldTops, mildTops, hotTops, coldBottoms, mildBottoms, hotBottoms } = rebuildTemperatureGroups();
-  const selectedGroup = getSuggestedTemperatureGroup(tempC);
+  const groups = getWardrobeGroups();
+  const selectedCategory = getTemperatureCategory(tempC);
 
-  const topOptions =
-    selectedGroup.clothingGroup === "cold"
-      ? coldTops.filter((item) => tops.includes(item))
-      : selectedGroup.clothingGroup === "mild"
-        ? mildTops.filter((item) => tops.includes(item))
-        : hotTops.filter((item) => tops.includes(item));
-
-  const bottomOptions =
-    selectedGroup.clothingGroup === "cold"
-      ? coldBottoms.filter((item) => bottoms.includes(item))
-      : selectedGroup.clothingGroup === "mild"
-        ? mildBottoms.filter((item) => bottoms.includes(item))
-        : hotBottoms.filter((item) => bottoms.includes(item));
+  const topOptions = groups[`${selectedCategory}Tops`] || [];
+  const bottomOptions = groups[`${selectedCategory}Bottoms`] || [];
 
   if (topOptions.length && bottomOptions.length) {
     wardrobeSuggestionTextElement.textContent = `Wear ${topOptions[0]} with ${bottomOptions[0]}.`;
     return;
   }
 
-  const fallbackExample =
-    selectedGroup.clothingGroup === "cold"
-      ? "hoodie or long sleeve"
-      : selectedGroup.clothingGroup === "mild"
-        ? "shirt or jeans"
-        : "t-shirt or shorts";
+  const fallbackMessage =
+    selectedCategory === "cold"
+      ? "No cold outfit saved yet. Add a cold top and bottom to get a suggestion."
+      : selectedCategory === "mild"
+        ? "No mild outfit saved yet. Add a mild top and bottom to get a suggestion."
+        : "No hot outfit saved yet. Add a hot top and bottom to get a suggestion.";
 
-  wardrobeSuggestionTextElement.textContent = `No ${selectedGroup.label} outfit saved yet. Add a ${fallbackExample} to get a suggestion.`;
+  wardrobeSuggestionTextElement.textContent = fallbackMessage;
 }
 
 function toFahrenheit(celsius) {
@@ -689,7 +636,7 @@ async function fetchWeatherForCoordinates(latitude, longitude, locationLabel) {
       renderOutfitGallery(suggestion);
     }
 
-    rebuildTemperatureGroups();
+    rebuildWardrobeGroups();
     updateWardrobeSuggestion(tempC);
     updateTemperatureDisplay();
     setSearchStatus(`Updated weather for ${locationLabel}.`);
@@ -762,15 +709,26 @@ async function searchCity(cityName) {
 }
 
 function renderSavedClothes() {
-  const tops = getStoredArray(topsKey);
-  const bottoms = getStoredArray(bottomsKey);
+  const groups = getWardrobeGroups();
 
   if (topsListElement) {
-    topsListElement.innerHTML = tops.length ? tops.map((item) => `<li>${item}</li>`).join("") : "<li>No tops saved yet.</li>";
+    const topsContent = [
+      `<li><strong>Hot</strong>: ${groups.hotTops.length ? groups.hotTops.map((item) => `<span>${item}</span>`).join(", ") : "None"}</li>`,
+      `<li><strong>Mild</strong>: ${groups.mildTops.length ? groups.mildTops.map((item) => `<span>${item}</span>`).join(", ") : "None"}</li>`,
+      `<li><strong>Cold</strong>: ${groups.coldTops.length ? groups.coldTops.map((item) => `<span>${item}</span>`).join(", ") : "None"}</li>`,
+    ].join("");
+
+    topsListElement.innerHTML = topsContent;
   }
 
   if (bottomsListElement) {
-    bottomsListElement.innerHTML = bottoms.length ? bottoms.map((item) => `<li>${item}</li>`).join("") : "<li>No bottoms saved yet.</li>";
+    const bottomsContent = [
+      `<li><strong>Hot</strong>: ${groups.hotBottoms.length ? groups.hotBottoms.map((item) => `<span>${item}</span>`).join(", ") : "None"}</li>`,
+      `<li><strong>Mild</strong>: ${groups.mildBottoms.length ? groups.mildBottoms.map((item) => `<span>${item}</span>`).join(", ") : "None"}</li>`,
+      `<li><strong>Cold</strong>: ${groups.coldBottoms.length ? groups.coldBottoms.map((item) => `<span>${item}</span>`).join(", ") : "None"}</li>`,
+    ].join("");
+
+    bottomsListElement.innerHTML = bottomsContent;
   }
 
   if (clothesListElement) {
@@ -781,19 +739,32 @@ function renderSavedClothes() {
   }
 }
 
-function addClothingItem(type, itemName) {
+function addClothingItem(type, itemName, category) {
   const cleanItem = String(itemName || "").trim();
+  const selectedCategory = (category || "mild").toLowerCase();
 
   if (!cleanItem) {
     return;
   }
 
-  const storageKey = type === "tops" ? topsKey : bottomsKey;
+  const storageKey =
+    type === "tops"
+      ? selectedCategory === "cold"
+        ? coldTopsKey
+        : selectedCategory === "hot"
+          ? hotTopsKey
+          : mildTopsKey
+      : selectedCategory === "cold"
+        ? coldBottomsKey
+        : selectedCategory === "hot"
+          ? hotBottomsKey
+          : mildBottomsKey;
+
   const currentItems = getStoredArray(storageKey);
   const nextItems = [...new Set([...currentItems, cleanItem])];
 
   saveStoredArray(storageKey, nextItems);
-  rebuildTemperatureGroups();
+  clearLegacyWardrobeData();
   renderSavedClothes();
 
   if (weatherData.celsius !== null) {
@@ -808,7 +779,8 @@ function handleTopClothesSubmit(event) {
     return;
   }
 
-  addClothingItem("tops", topClothesInput.value);
+  const categorySelect = document.getElementById("top-clothes-category");
+  addClothingItem("tops", topClothesInput.value, categorySelect?.value || "mild");
   topClothesInput.value = "";
 }
 
@@ -819,7 +791,8 @@ function handleBottomClothesSubmit(event) {
     return;
   }
 
-  addClothingItem("bottoms", bottomClothesInput.value);
+  const categorySelect = document.getElementById("bottom-clothes-category");
+  addClothingItem("bottoms", bottomClothesInput.value, categorySelect?.value || "mild");
   bottomClothesInput.value = "";
 }
 
@@ -846,7 +819,7 @@ if (bottomClothesForm) {
   bottomClothesForm.addEventListener("submit", handleBottomClothesSubmit);
 }
 
-rebuildTemperatureGroups();
+rebuildWardrobeGroups();
 
 if (citySearchInput) {
   const savedFavoriteCity = getSavedFavoriteCity();

@@ -18,13 +18,27 @@
         <div class="clothes-entry-grid">
           <form id="top-clothes-form" class="clothes-form" data-type="tops" aria-label="Save a top item">
             <label for="top-clothes-input">Add a top</label>
-            <input id="top-clothes-input" type="text" name="top" placeholder="Example: hoodie" />
+            <div class="clothes-input-row">
+              <input id="top-clothes-input" type="text" name="top" placeholder="Example: hoodie" />
+              <select id="top-clothes-category" aria-label="Choose a top weather category">
+                <option value="hot">Hot</option>
+                <option value="mild" selected>Mild</option>
+                <option value="cold">Cold</option>
+              </select>
+            </div>
             <button type="submit">Save Top</button>
           </form>
 
           <form id="bottom-clothes-form" class="clothes-form" data-type="bottoms" aria-label="Save a bottom item">
             <label for="bottom-clothes-input">Add a bottom</label>
-            <input id="bottom-clothes-input" type="text" name="bottom" placeholder="Example: shorts" />
+            <div class="clothes-input-row">
+              <input id="bottom-clothes-input" type="text" name="bottom" placeholder="Example: shorts" />
+              <select id="bottom-clothes-category" aria-label="Choose a bottom weather category">
+                <option value="hot">Hot</option>
+                <option value="mild" selected>Mild</option>
+                <option value="cold">Cold</option>
+              </select>
+            </div>
             <button type="submit">Save Bottom</button>
           </form>
         </div>
