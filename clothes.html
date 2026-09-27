@@ -15,13 +15,33 @@
       </header>
 
       <div class="clothes-card">
-        <form id="clothes-form" class="clothes-form" aria-label="Save clothing item">
-          <label for="clothes-input">Add a clothing item</label>
-          <input id="clothes-input" type="text" name="clothes" placeholder="Type a clothing item" />
-          <button type="submit">Save Item</button>
-        </form>
+        <div class="clothes-entry-grid">
+          <form id="top-clothes-form" class="clothes-form" data-type="tops" aria-label="Save a top item">
+            <label for="top-clothes-input">Add a top</label>
+            <input id="top-clothes-input" type="text" name="top" placeholder="Example: hoodie" />
+            <button type="submit">Save Top</button>
+          </form>
 
-        <ul id="clothes-list" class="clothes-list" aria-live="polite"></ul>
+          <form id="bottom-clothes-form" class="clothes-form" data-type="bottoms" aria-label="Save a bottom item">
+            <label for="bottom-clothes-input">Add a bottom</label>
+            <input id="bottom-clothes-input" type="text" name="bottom" placeholder="Example: shorts" />
+            <button type="submit">Save Bottom</button>
+          </form>
+        </div>
+
+        <div class="clothes-groups">
+          <section class="clothes-group">
+            <h2>Tops</h2>
+            <ul id="tops-list" class="clothes-list" aria-live="polite"></ul>
+          </section>
+
+          <section class="clothes-group">
+            <h2>Bottoms</h2>
+            <ul id="bottoms-list" class="clothes-list" aria-live="polite"></ul>
+          </section>
+        </div>
+
+        <ul id="clothes-list" class="clothes-list legacy-list" aria-live="polite"></ul>
       </div>
     </div>
 

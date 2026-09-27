@@ -17,13 +17,142 @@ body.theme-night {
   --bg-start: #020817;
   --bg-end: #111827;
   --card: rgba(15, 23, 42, 0.76);
-  --primary: #e2e8f0;
-  --secondary: #cbd5e1;
+  --primary: #f8fafc;
+  --secondary: #dbeafe;
   --accent: #60a5fa;
   --accent-strong: #3b82f6;
   --accent-soft: rgba(96, 165, 250, 0.18);
   --shadow: rgba(2, 6, 23, 0.6);
   --border: rgba(148, 163, 184, 0.18);
+}
+
+body.theme-night,
+body.theme-night .app-container,
+body.theme-night .weather-card,
+body.theme-night .topbar,
+body.theme-night .header-controls,
+body.theme-night .brand-block,
+body.theme-night .weather-card *,
+body.theme-night .clothes-page,
+body.theme-night .clothes-card,
+body.theme-night .clothes-group,
+body.theme-night .clothes-list li,
+body.theme-night .clothes-form input,
+body.theme-night .page-link,
+body.theme-night .secondary-btn,
+body.theme-night .unit-toggle,
+body.theme-night .unit-btn,
+body.theme-night .search-form,
+body.theme-night .stat-card,
+body.theme-night .outfit-panel,
+body.theme-night .wardrobe-suggestion,
+body.theme-night .outfit-card,
+body.theme-night .outfit-card-copy {
+  color: var(--primary);
+}
+
+body.theme-night .eyebrow,
+body.theme-night .location-label,
+body.theme-night .weather-description,
+body.theme-night .temp-label,
+body.theme-night .stat-card span,
+body.theme-night .outfit-panel h3,
+body.theme-night .outfit-panel p,
+body.theme-night .wardrobe-suggestion h4,
+body.theme-night .outfit-card-copy p,
+body.theme-night .search-form input::placeholder,
+body.theme-night .clothes-form label,
+body.theme-night .page-link,
+body.theme-night .secondary-btn,
+body.theme-night .unit-btn {
+  color: var(--secondary);
+}
+
+body.theme-night h1,
+body.theme-night h2,
+body.theme-night h3,
+body.theme-night h4,
+body.theme-night #temperature,
+body.theme-night #feels-like,
+body.theme-night #wind-speed,
+body.theme-night #wardrobe-suggestion-text,
+body.theme-night #outfit-message,
+body.theme-night .clothes-group h2,
+body.theme-night .clothes-list li,
+body.theme-night .search-status,
+body.theme-night .condition-badge,
+body.theme-night .weather-icon,
+body.theme-night strong,
+body.theme-night .brand-block,
+body.theme-night .location-row,
+body.theme-night .weather-card,
+body.theme-night .stat-card strong {
+  color: #f8fafc;
+}
+
+body.theme-night .search-form,
+body.theme-night .page-link,
+body.theme-night .secondary-btn,
+body.theme-night .unit-toggle,
+body.theme-night .stat-card,
+body.theme-night .outfit-panel,
+body.theme-night .wardrobe-suggestion,
+body.theme-night .outfit-card,
+body.theme-night .clothes-form input,
+body.theme-night .clothes-list li,
+body.theme-night .clothes-card {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+body.theme-night .search-form input,
+body.theme-night .page-link,
+body.theme-night .secondary-btn,
+body.theme-night .unit-btn,
+body.theme-night .clothes-form input {
+  color: var(--primary);
+}
+
+body.theme-night .secondary-btn,
+body.theme-night .page-link,
+body.theme-night .search-form button,
+body.theme-night .clothes-form button,
+body.theme-night .unit-btn.active {
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.4);
+}
+
+body.theme-night .page-link,
+body.theme-night .secondary-btn {
+  background: rgba(15, 23, 42, 0.82);
+  color: var(--primary);
+}
+
+body.theme-night .search-form button,
+body.theme-night .clothes-form button,
+body.theme-night .unit-btn.active {
+  color: #f8fafc;
+}
+
+body.theme-night .temperature-box {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.9));
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+body.theme-night .weather-icon,
+body.theme-night .condition-badge {
+  background: rgba(96, 165, 250, 0.16);
+}
+
+body.theme-night .outfit-card-copy p,
+body.theme-night .clothes-list li,
+body.theme-night .weather-description,
+body.theme-night .temp-label,
+body.theme-night .stat-card span,
+body.theme-night .outfit-panel p,
+body.theme-night .wardrobe-suggestion,
+body.theme-night .page-link,
+body.theme-night .secondary-btn {
+  opacity: 1;
 }
 
 * {
@@ -532,6 +661,12 @@ h2 {
   box-shadow: 0 18px 45px var(--shadow);
 }
 
+.clothes-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
 .clothes-form {
   display: flex;
   flex-wrap: wrap;
@@ -564,12 +699,35 @@ h2 {
   border-radius: 12px;
 }
 
+.clothes-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.clothes-group {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.clothes-group h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+}
+
 .clothes-list {
   list-style: none;
   padding: 0;
-  margin: 22px 0 0;
+  margin: 0;
   display: grid;
   gap: 10px;
+}
+
+.legacy-list {
+  margin-top: 22px;
 }
 
 .clothes-list li {
@@ -616,6 +774,8 @@ h2 {
     padding: 22px 18px;
   }
 
+  .clothes-entry-grid,
+  .clothes-groups,
   .stats-grid,
   .outfit-gallery {
     grid-template-columns: 1fr;
